@@ -1,25 +1,23 @@
+/*
+ * ベストプラクティスを参考に書き直し
+ * ひとつ前の答えに2 or 3 or 5を乗算していけば、自然と2,3,5のべき乗の集合が出来上がるでしょ
+ */
 function hamming(n) {
-    const MAX = 1000000000;
+    let i2 = 0,
+        i3 = 0,
+        i5 = 0;
 
-    // 定数MAXに対する、2,3,5の最大指数を求める
-    const xx2 = Math.log2(MAX);
-    const xx3 = xx2 / Math.log2(3);
-    const xx5 = xx2 / Math.log2(5);
+    const ans = [1];
 
-    const ans = [];
-    let i, j, k;
+    do {
+        let x = Math.min(2 * ans[i2], 3 * ans[i3], 5 * ans[i5]);
+        ans.push(x);
+        if (2 * ans[i2] <= x) i2++;
+        if (3 * ans[i3] <= x) i3++;
+        if (5 * ans[i5] <= x) i5++;
+    } while (ans.length < n);
 
-    // べき乗の組み合わせ一覧をつくる
-    for (i = 0; i < xx2 + 1; i++) {
-        for (j = 0; j < xx3 + 1; j++) {
-            for (k = 0; k < xx5 + 1; k++) {
-                ans.push((2 ** i) * (3 ** j) * (5 ** k));
-            }
-        }
-    }
-
-    // 指定された順位の値を返す
-    return ans.sort((a, b) => a - b)[n - 1];
+    return ans[n - 1];
 }
 
 /*
