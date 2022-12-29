@@ -4,7 +4,7 @@ function solution(list) {
     let i = 0;
 
     while (i <= list.length) {
-        if (box.length == 0 || (i != list.length && box.at(-1) + 1 == list[i])) {
+        if (box.length == 0 || (typeof list[i] !== 'undefined' && box.at(-1) + 1 == list[i])) {
             box.push(list[i]);
             i++;
         } else {
