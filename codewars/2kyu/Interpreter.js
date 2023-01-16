@@ -1,5 +1,3 @@
-// FIXME Variables
-
 class Interpreter {
     constructor() {
         this.vars = {};
@@ -10,7 +8,29 @@ class Interpreter {
     }
     input(expr) {
         const tokens = Interpreter.tokenize(expr);
-        return this.#calc(this.#bracketsCals(tokens));
+
+        // no input
+        if (tokens.length == 0) return '';
+
+        // ref
+        if (tokens.length == 1 && /^[a-zA-Z][a-zA-Z_]*/.test(tokens[0])) {
+            return Number(this.#refVar(tokens[0]));
+        }
+
+        // assignments
+        // TODO? x = a + 1
+        if (/^[a-zA-Z][a-zA-Z_]*/.test(tokens[0]) && '=' == tokens[1]) {
+            this.vars[tokens[0]] = tokens[2];
+            return Number(this.vars[tokens[0]]);
+        }
+
+        // calc
+        let vton = tokens.map(element => {
+            if (/[0-9*\/%+\-()]/.test(element)) return element;
+            return this.#refVar(element);
+        });
+        let ans = this.#calc(this.#bracketsCalc(vton));
+        return ans;
     }
     #calc(f) {
         // times, divided, mod
@@ -51,16 +71,24 @@ class Interpreter {
 
         return f[0];
     }
-    #bracketsCals(f) {
+    #bracketsCalc(f) {
         let start = f.indexOf('(');
+        // FIXME (1+1) + (1+1)
         let end = f.lastIndexOf(')');
 
         if (start == -1) return f;
 
-        let inside = this.#bracketsCals(f.slice(start + 1, end));
+        let inside = this.#bracketsCalc(f.slice(start + 1, end));
         f.splice(start, end - start + 1, this.#calc(inside));
 
         return f;
+    }
+    #refVar(v) {
+        if (this.vars.hasOwnProperty(v)) {
+            return this.vars[v];
+        } else {
+            throw new Error(`${v} is not defined`);
+        }
     }
 }
 
@@ -89,6 +117,12 @@ console.log(eval((2 + 3 + (4 + 5 + (6 + 7)))))
 console.log(t.input("6 / 2 * ( 1 + 2 )"))
 console.log(eval(6 / 2 * (1 + 2)));
 
+console.log(t.input("10 / 2 * ( 6 - ( 4 + 1 ) ) )"))
+console.log(eval(10 / 2 * (6 - (4 + 1))));
+
+console.log(t.input("15 - ( 5 * ( 6 / ( 4 - 2 ) ) )"))
+console.log(eval(15 - (5 * (6 / (4 - 2)))));
+
 /*
 1 + ( 1 + 1 * ( 1 + 1 ) )
 
@@ -98,3 +132,12 @@ console.log(eval(6 / 2 * (1 + 2)));
 
 1 + 1
 */
+
+console.log(t.input("x = 1"));
+console.log(t.input("x = 7"));
+console.log(t.input("       "));
+
+console.log(t.input("x"));
+//console.log(t.input("y"));
+console.log(t.input("x + 8"));
+console.log(t.input("x - 8")); // TODO timed out
