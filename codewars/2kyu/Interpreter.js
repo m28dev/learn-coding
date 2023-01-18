@@ -18,24 +18,22 @@ class Interpreter {
         }
 
         // assignments
-        // TODO? x = a + 1
+        // FIXME x = a + 1
         if (/^[a-zA-Z][a-zA-Z_]*/.test(tokens[0]) && '=' == tokens[1]) {
             this.vars[tokens[0]] = tokens[2];
             return Number(this.vars[tokens[0]]);
         }
 
         // calc
-        let vton = tokens.map(element => {
+        return this.#calc(this.#bracketsCalc(tokens.map(element => {
             if (/[0-9*\/%+\-()]/.test(element)) return element;
             return this.#refVar(element);
-        });
-        let ans = this.#calc(this.#bracketsCalc(vton));
-        return ans;
+        })));
     }
     #calc(f) {
         // times, divided, mod
         while (true) {
-            let idx = f.findIndex(element => /[*/%]/.test(element));
+            let idx = f.findIndex(element => /^[*/%]$/.test(element));
             if (idx == -1) break;
 
             switch (f[idx]) {
@@ -54,7 +52,7 @@ class Interpreter {
         }
         // plus, minus
         while (true) {
-            let idx = f.findIndex(element => /[+-]/.test(element));
+            let idx = f.findIndex(element => /^[+-]$/.test(element));
             if (idx == -1) break;
 
             switch (f[idx]) {
@@ -117,7 +115,7 @@ console.log(eval((2 + 3 + (4 + 5 + (6 + 7)))))
 console.log(t.input("6 / 2 * ( 1 + 2 )"))
 console.log(eval(6 / 2 * (1 + 2)));
 
-console.log(t.input("10 / 2 * ( 6 - ( 4 + 1 ) ) )"))
+console.log(t.input("10 / 2 * ( 6 - ( 4 + 1 ) )"))
 console.log(eval(10 / 2 * (6 - (4 + 1))));
 
 console.log(t.input("15 - ( 5 * ( 6 / ( 4 - 2 ) ) )"))
@@ -140,4 +138,6 @@ console.log(t.input("       "));
 console.log(t.input("x"));
 //console.log(t.input("y"));
 console.log(t.input("x + 8"));
-console.log(t.input("x - 8")); // TODO timed out
+console.log(t.input("x - 8"));
+
+console.log(t.input("( 2 + 3 ) + ( 4 + 5 ) + 1"));
