@@ -18,17 +18,41 @@ class Interpreter {
         }
 
         // assignments
-        // FIXME x = a + 1
+        let vFlg = false;
         if (/^[a-zA-Z][a-zA-Z_]*/.test(tokens[0]) && '=' == tokens[1]) {
-            this.vars[tokens[0]] = tokens[2];
-            return Number(this.vars[tokens[0]]);
+            if (tokens.length == 3) {
+                this.vars[tokens[0]] = tokens[2];
+                return Number(this.vars[tokens[0]]);
+            } else {
+                vFlg = true;
+            }
         }
 
+        // FIXME 'All other cases will throw an error'
+
         // calc
-        return this.#calc(this.#bracketsCalc(tokens.map(element => {
+        let expand = vFlg ? tokens.slice(2) : tokens;
+
+        while (true) {
+            let len = expand.length;
+            expand = this.#bracketsCalc(expand);
+            if (len == expand.length) break;
+        }
+
+        expand = expand.map(element => {
             if (/[0-9*\/%+\-()]/.test(element)) return element;
             return this.#refVar(element);
-        })));
+        });
+
+        let ans = this.#calc(expand);
+
+        if (vFlg) {
+            this.vars[tokens[0]] = ans;
+            return this.vars[tokens[0]];
+        } else {
+            return ans;
+        }
+
     }
     #calc(f) {
         // times, divided, mod
@@ -70,11 +94,20 @@ class Interpreter {
         return f[0];
     }
     #bracketsCalc(f) {
-        let start = f.indexOf('(');
-        // FIXME (1+1) + (1+1)
-        let end = f.lastIndexOf(')');
+        let start, end;
 
+        start = f.indexOf('(');
         if (start == -1) return f;
+
+        let bracketCount = 1;
+        for (let i = start + 1; i < f.length; i++) {
+            if (f[i] == ')') bracketCount--;
+            if (f[i] == '(') bracketCount++;
+            if (bracketCount == 0) {
+                end = i;
+                break;
+            }
+        }
 
         let inside = this.#bracketsCalc(f.slice(start + 1, end));
         f.splice(start, end - start + 1, this.#calc(inside));
@@ -89,55 +122,3 @@ class Interpreter {
         }
     }
 }
-
-const t = new Interpreter();
-console.log(t.input("1 + 1"))
-console.log(eval(1 + 1))
-
-console.log(t.input("2 * 3 + 4"))
-console.log(eval(2 * 3 + 4))
-
-console.log(t.input("2 + 3 * 4"))
-console.log(eval(2 + 3 * 4))
-
-console.log(t.input("2 + 3 * 4 / 5 * 3 + 1"))
-console.log(eval(2 + 3 * 4 / 5 * 3 + 1))
-
-console.log(t.input("5 + 2 % 3 * 4 - 6 / 5 * 3 + 1"))
-console.log(eval(5 + 2 % 3 * 4 - 6 / 5 * 3 + 1))
-
-console.log(t.input("2 + 3 + ( 4 + 5 + ( 6 + 7 ) )"))
-console.log(eval(2 + 3 + (4 + 5 + (6 + 7))));
-
-console.log(t.input("( 2 + 3 + ( 4 + 5 + ( 6 + 7 ) ) )"))
-console.log(eval((2 + 3 + (4 + 5 + (6 + 7)))))
-
-console.log(t.input("6 / 2 * ( 1 + 2 )"))
-console.log(eval(6 / 2 * (1 + 2)));
-
-console.log(t.input("10 / 2 * ( 6 - ( 4 + 1 ) )"))
-console.log(eval(10 / 2 * (6 - (4 + 1))));
-
-console.log(t.input("15 - ( 5 * ( 6 / ( 4 - 2 ) ) )"))
-console.log(eval(15 - (5 * (6 / (4 - 2)))));
-
-/*
-1 + ( 1 + 1 * ( 1 + 1 ) )
-
-1 + 1 * ( 1 + 1 )
-
-( 1 + 1 )
-
-1 + 1
-*/
-
-console.log(t.input("x = 1"));
-console.log(t.input("x = 7"));
-console.log(t.input("       "));
-
-console.log(t.input("x"));
-//console.log(t.input("y"));
-console.log(t.input("x + 8"));
-console.log(t.input("x - 8"));
-
-console.log(t.input("( 2 + 3 ) + ( 4 + 5 ) + 1"));
