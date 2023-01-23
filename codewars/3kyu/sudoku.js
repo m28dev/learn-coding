@@ -1,49 +1,38 @@
 function sudoku(puzzle) {
     let i, j;
     let su = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    for (i = 0; i < puzzle.length; i++) {
-        for (j = 0; j < puzzle[i].length; j++) {
-            if (puzzle[i][j] !== 0) continue;
-            // yoko
-            let yoko = puzzle[i].filter(v => v !== 0);
-            // tate
-            let tate = puzzle.filter(v => v[j] !== 0).map(a => a[j]);
-            // square
-            // TODO
-            let x = i % 3;
-            let y = j % 3;
 
-            console.log(yoko);
-            console.log(tate);
+    while (true) {
+        let predicted = false;
 
-            let existence = new Set([...yoko, ...tate]);
-            console.log(existence);
+        for (i = 0; i < puzzle.length; i++) {
+            for (j = 0; j < puzzle[i].length; j++) {
+                if (puzzle[i][j] !== 0) continue;
 
-            let candidate = su.filter(v => !existence.has(v));
-            console.log(candidate);
+                predicted = true;
 
-            if (candidate.length === 1) {
-                puzzle[i][j] = candidate[0];
+                // yoko
+                let yoko = puzzle[i].filter(v => v !== 0);
+                // tate
+                let tate = puzzle.filter(v => v[j] !== 0).map(a => a[j]);
+                // square
+                let y = i - i % 3;
+                let x = j - j % 3;
+                let square = puzzle.slice(y, y + 3)
+                    .map(arr => arr.slice(x, x + 3))
+                    .flat()
+                    .filter(v => v !== 0);
+
+                // predict
+                let existence = new Set([...yoko, ...tate, ...square]);
+                let candidate = su.filter(v => !existence.has(v));
+                if (candidate.length === 1) {
+                    puzzle[i][j] = candidate[0];
+                }
             }
-            break; //TODO
         }
-        break; //TODO
+        if (!predicted) break;
     }
 
     return puzzle;
 }
-
-// 
-
-sudoku([
-    [5, 3, 0, 0, 7, 0, 0, 0, 0],
-    [6, 0, 0, 1, 9, 5, 0, 0, 0],
-    [0, 9, 8, 0, 0, 0, 0, 6, 0],
-    [8, 0, 0, 0, 6, 0, 0, 0, 3],
-    [4, 0, 0, 8, 0, 3, 0, 0, 1],
-    [7, 0, 0, 0, 2, 0, 0, 0, 6],
-    [0, 6, 0, 0, 0, 0, 2, 8, 0],
-    [0, 0, 0, 4, 1, 9, 0, 0, 5],
-    [0, 0, 0, 0, 8, 0, 0, 7, 9]]
-);
-
