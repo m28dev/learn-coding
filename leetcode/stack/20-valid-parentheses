@@ -1,0 +1,27 @@
+function isValid(s: string): boolean {
+    const arr: string[] = [];
+    const sArr = s.split("");
+
+    for (let i = 0; i < sArr.length; i++) {
+        const kakko = sArr[i];
+
+        if (kakko == "(" || kakko == "[" || kakko == "{") {
+            arr.push(kakko);
+            continue;
+        }
+
+        if (
+            kakko == ")" && arr.at(-1) == "(" ||
+            kakko == "]" && arr.at(-1) == "[" ||
+            kakko == "}" && arr.at(-1) == "{"
+        ) {
+            arr.pop();
+            continue;
+        }
+
+        return false;
+    }
+
+    if (arr.length != 0) return false;
+    return true;
+};
